@@ -24,8 +24,6 @@ glm::uvec3** RayTracer::render(const std::vector<Shape*>& shapes, const std::vec
       glm::vec3 horizontal = glm::normalize(glm::cross(camera_direction, vertical));
       //float v_w = tan((v - 0.5f) * vfov);
       //float h_w = tan((u - 0.5f) * hfov);
-      //std::cout << v << " " << u << std::endl;
-      //std::cout << v_w << " " << h_w << std::endl;
       //assert(v_w >= -tan(vfov / 2) && v_w <= tan(vfov / 2));
       //assert(h_w >= -tan(hfov / 2) && h_w <= tan(hfov / 2));
       float v_w = (2 * v - 1) * tan(vfov / 2);

@@ -15,3 +15,6 @@ target_link_libraries(ray glm::glm)
 
 add_executable(e1 examples/e1.cpp)
 target_link_libraries(e1 ray viewer)
+
+add_executable(e2 examples/e2.cpp)
+target_link_libraries(e2 ray viewer)
