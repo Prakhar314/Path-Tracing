@@ -1,6 +1,10 @@
 #include "shape.hpp"
 #include <iostream>
 
+glm::vec3 Point::get_position() const{
+  return position;
+}
+
 float Point::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_normal) const{
   float t = glm::dot(position - o, d);
   if (t < t_min || t > t_max) {
@@ -11,6 +15,10 @@ float Point::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min
   }
   hit_normal = glm::normalize(position - o);
   return t;
+}
+
+glm::vec3 Sphere::get_position() const{
+  return center;
 }
 
 float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_normal) const{

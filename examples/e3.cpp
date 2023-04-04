@@ -10,10 +10,9 @@ int main (){
   shapes.push_back(new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(0,1,1)));
   shapes.push_back(new Cuboid(glm::vec3(2, 1, -3), glm::vec3(3, 2, -4), glm::vec3(0,0,1)));
   shapes.push_back(new Cuboid(glm::vec3(-3, -1, -3), glm::vec3(-2, -0.5, -4), glm::vec3(0,0,1)));
-  vector<LightSource*> lights;
-  lights.push_back(new LightSource(glm::vec3(2, 2, -1), glm::vec3(200)));
-  lights.push_back(new LightSource(glm::vec3(0, 200, -1), glm::vec3(500000)));
-  glm::uvec3** output = raytracer.render(shapes, lights);
+  shapes.push_back(new Point(glm::vec3(2, 2, -1), glm::vec3(0), glm::vec3(200)));
+  shapes.push_back(new Point(glm::vec3(0, 200, -1), glm::vec3(0), glm::vec3(500000)));
+  glm::uvec3** output = raytracer.render(shapes);
   while (!viewer.shouldQuit()) {
     viewer.update(output);
   }
