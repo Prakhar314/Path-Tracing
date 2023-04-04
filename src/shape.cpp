@@ -1,7 +1,19 @@
 #include "shape.hpp"
 #include <iostream>
 
-float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_position, glm::vec3& hit_normal) const{
+float Point::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_normal) const{
+  float t = glm::dot(position - o, d);
+  if (t < t_min || t > t_max) {
+    return -1.0f;
+  }
+  if (glm::length(position - o - t * d) > 0.001f) {
+    return -1.0f;
+  }
+  hit_normal = glm::normalize(position - o);
+  return t;
+}
+
+float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_normal) const{
   // let the point on the sphere be p = o + td
   // then the equation of the sphere is (p - c) * (p - c) = r^2
   // (o + td - c) * (o + td - c) = r^2
@@ -38,12 +50,18 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
     }
   }
   assert(t >= t_min && t <= t_max && t > 0);
-  hit_position = o + t * d;
-  hit_normal = glm::normalize(hit_position - center);
+  glm::vec3 p = o + t * d;
+  // hit inside or outside
+  if (glm::dot(p - center, d) < 0) {
+    hit_normal = glm::normalize(p - center);
+  }
+  else {
+    hit_normal = glm::normalize(center - p);
+  }
   return t;
 }
 
-float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_position, glm::vec3 &hit_normal) const{
+float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_normal) const{
   // let the point on the plane be p = o + td
   // then the equation of the plane is n * p = d
   // n * (o + td) = d
@@ -56,7 +74,7 @@ float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min
   if (t < t_min || t > t_max) {
     return -1.0f;
   }
-  hit_position = o + t * d;
+  // hit above or below
   if (glm::dot(normal, d) > 0) {
     hit_normal = -normal;
   }
@@ -66,7 +84,7 @@ float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min
   return t;
 }
 
-float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3& hit_position, glm::vec3& hit_normal) const{
+float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3& hit_normal) const{
   // let the point on the cuboid be p = o + td
   // then the equation of the cuboid is min.x <= p.x <= max.x and so on
   float t_x_min = (min_coords.x - o.x) / d.x;
@@ -100,7 +118,6 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
     if (t_in_max > t_max || t_in_max < t_min) {
       return -1.0f;
     }
-    hit_position = o + t_in_max * d;
     if (t_in_max == t_x_max) {
       hit_normal = glm::vec3(d.x < 0 ? 1 : -1, 0, 0);
     }
@@ -116,7 +133,6 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
     if (t_in_min > t_max || t_in_min < t_min) {
       return -1.0f;
     }
-    hit_position = o + t_in_min * d;
     if (t_in_min == t_x_min) {
       hit_normal = glm::vec3(d.x < 0 ? 1 : -1, 0, 0);
     }
@@ -129,3 +145,5 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
     return t_in_min;
   }
 }
+
+

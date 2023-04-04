@@ -1,7 +1,7 @@
 #include "ray.hpp"
 #include <iostream>
 
-#define PI 3.14159265358979323846
+#define PI 3.14159265358979323846f
 
 RayTracer::RayTracer(const int width, const int height, const float vfov, const glm::vec3& camera_position, const glm::vec3& camera_direction, const glm::vec3& camera_up):
   width(width), height(height), 
@@ -32,24 +32,85 @@ glm::uvec3** RayTracer::render(const std::vector<Shape*>& shapes, const std::vec
       framebuffer[i][j] = glm::uvec3(255.0f * trace(camera_position, d, shapes, lights));
     }
   }
+  // normalize the framebuffer if any value is greater than 255
+  uint32_t max = 0;
+  for (int i = 0; i < width; i++) {
+    for (int j = 0; j < height; j++) {
+      if (framebuffer[i][j].x > max) max = framebuffer[i][j].x;
+      if (framebuffer[i][j].y > max) max = framebuffer[i][j].y;
+      if (framebuffer[i][j].z > max) max = framebuffer[i][j].z;
+    }
+  }
+  if (max > 255) {
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
+        framebuffer[i][j] = framebuffer[i][j] * 255u / max;
+      }
+    }
+  }
   return framebuffer;
 }
 
-glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, const std::vector<LightSource*>& lights){
+void RayTracer::shoot_ray(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, const std::vector<LightSource*>& lights, float& hit_t, glm::vec3& hit_normal, Shape*& hit_shape) const{
   // find the closest shape and its intersection point
   Shape* closest_shape = nullptr;
   glm::vec3 closest_position, closest_normal;
   float closest_t = std::numeric_limits<float>::max();
+  
+  // intersect with all lights and shapes
   for(Shape* shape : shapes){
-    glm::vec3 temp_position, temp_normal;
-    float t = shape->intersect(o, d, T_MIN, T_MAX, temp_position, temp_normal);
-    if(t > T_MIN && t < closest_t){
+    glm::vec3 temp_normal;
+    float t = shape->intersect(o, d, T_MIN, T_MAX, temp_normal);
+    if(t > T_MIN && t < closest_t && t < T_MAX){
       closest_t = t;
       closest_shape = shape;
-      closest_position = temp_position;
       closest_normal = temp_normal;
     }
   }
+  for(LightSource* light : lights){
+    Shape* shape = light->shape;
+    glm::vec3 temp_normal;
+    float t = shape->intersect(o, d, T_MIN, T_MAX, temp_normal);
+    if(t > T_MIN && t < closest_t && t < T_MAX){
+      closest_t = t;
+      closest_shape = shape;
+      closest_normal = temp_normal;
+    }
+  }
+
+  if (closest_shape != nullptr) {
+    hit_t = closest_t;
+    hit_normal = closest_normal;
+    hit_shape = closest_shape;
+  }
+  else{
+    hit_shape = nullptr;
+  }
+}
+
+bool RayTracer::shadow(const glm::vec3& o, const LightSource* light, const std::vector<Shape*>& shapes, const std::vector<LightSource*>& lights) const{
+  // check if the ray from o to light->position intersects any shape
+  glm::vec3 d = glm::normalize(light->position - o);
+  // using shoot_ray
+  float closest_t;
+  glm::vec3 closest_normal;
+  Shape* closest_shape;
+  shoot_ray(o, d, shapes, lights, closest_t, closest_normal, closest_shape);
+  if(closest_shape != nullptr){
+    if(closest_shape != light->shape){
+      return true;
+    }
+  }
+  return false;
+}
+
+glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, const std::vector<LightSource*>& lights) const{
+  // find the closest shape and its intersection point using shoot_ray
+  float closest_t;
+  glm::vec3 closest_normal;
+  Shape* closest_shape;
+  shoot_ray(o, d, shapes, lights, closest_t, closest_normal, closest_shape);
+  glm::vec3 closest_position = o + closest_t * d;
   // if there is no intersection, return the background color
   if(closest_shape == nullptr){
     return glm::vec3(0.0f);
@@ -59,6 +120,27 @@ glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::ve
     return (closest_normal + glm::vec3(1.0f)) / 2.0f;
   }
   else{
-    return glm::vec3(1.0f);
+    // check if the shape is a light
+    for(LightSource* light : lights){
+      if(closest_shape == light->shape){
+        glm::vec3 l = light->position - closest_position;
+        return light->intensity / glm::dot(l, l);
+      }
+    }
+    // not a light
+    glm::vec3 l_i(0.0f);
+    for(LightSource* light : lights){
+      glm::vec3 l = light->position - closest_position;
+      float distance = glm::length(l);
+      l = l / distance;
+      if(!shadow(closest_position, light, shapes, lights)){
+        // flux = I * dA cos(theta) / r^2
+        // irradiance = flux / dA
+        // radiance = brdf * irradiance
+        glm::vec3 e = light->intensity * glm::max(glm::dot(l, closest_normal), 0.0f) / (distance * distance);
+        l_i += closest_shape->albedo / PI * e; 
+      }
+    }
+    return l_i;
   }
 }
