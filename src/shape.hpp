@@ -6,16 +6,16 @@ using namespace std;
 class Shape
 {
 public:
-    virtual pair<glm::vec3, glm::vec3> intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max) const = 0;
-private:
+    Shape(const glm::vec3 albedo) : albedo(albedo) {}
+    virtual float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& position, glm::vec3& normal) const = 0;
     glm::vec3 albedo;
 };
 
 class Sphere : public Shape
 {
 public:
-    Sphere(const glm::vec3& center, const float radius) : center(center), radius(radius) {}
-    pair<glm::vec3, glm::vec3> intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max) const override;
+    Sphere(const glm::vec3& center, const float radius, const glm::vec3 albedo) : Shape(albedo), center(center), radius(radius) {}
+    float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& position, glm::vec3& normal) const override;
 private:
     glm::vec3 center;
     float radius;
@@ -24,8 +24,8 @@ private:
 class Plane : public Shape
 {
 public:
-    Plane(const glm::vec3& normal, const float d) : normal(normal), d(d) {}
-    pair<glm::vec3, glm::vec3> intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max) const override;
+    Plane(const glm::vec3& normal, const float d, const glm::vec3 albedo) : Shape(albedo),normal(normal), d(d){}
+    float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& position, glm::vec3& normal) const override;
 private:
     glm::vec3 normal;
     float d;
@@ -34,9 +34,9 @@ private:
 class Cuboid : public Shape
 {
 public:
-    Cuboid(const glm::vec3& min, const glm::vec3& max) : min(min), max(max) {}
-    pair<glm::vec3, glm::vec3> intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max) const override;
+    Cuboid(const glm::vec3& min, const glm::vec3& max, const glm::vec3 albedo) : Shape(albedo),min_coords(min), max_coords(max){}
+    float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& position, glm::vec3& normal) const override;
 private:
-    glm::vec3 min;
-    glm::vec3 max;
+    glm::vec3 min_coords;
+    glm::vec3 max_coords;
 };
