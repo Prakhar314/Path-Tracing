@@ -24,21 +24,26 @@ RayTracer::RayTracer(const int width, const int height, const float vfov, const 
   }
 }
 
-glm::uvec3** RayTracer::render(const std::vector<Shape*>& shapes) {
+  glm::uvec3** RayTracer::render(const std::vector<Shape*>& shapes) {
   for (int i = 0; i < width; i++) {
     for (int j = 0; j < height; j++) {
-      float u = i / (width - 1);
-      float v = j / (height - 1);
-      glm::vec3 vertical = camera_up;
-      glm::vec3 horizontal = glm::normalize(glm::cross(camera_direction, vertical));
-      //float v_w = tan((v - 0.5f) * vfov);
-      //float h_w = tan((u - 0.5f) * hfov);
-      //assert(v_w >= -tan(vfov / 2) && v_w <= tan(vfov / 2));
-      //assert(h_w >= -tan(hfov / 2) && h_w <= tan(hfov / 2));
-      float v_w = (2 * v - 1) * tan(vfov / 2);
-      float h_w = (2 * u - 1) * tan(hfov / 2);
-      glm::vec3 d = glm::normalize(camera_direction + h_w * horizontal + v_w * vertical);
-      framebuffer[i][j] = glm::uvec3(255.0f * trace(camera_position, d, shapes, 0));
+      glm::vec3 color_sum(0.0f);
+      float num_samples=10;
+      for (int k = 0; k < num_samples; k++) {
+        float du=static_cast<float>(rand()) / RAND_MAX;
+        float dv=static_cast<float>(rand()) / RAND_MAX;
+        //du=0;dv=0;
+        float u = (i + du) / (width - 1);
+        float v = (j + dv) / (height - 1);
+        //std::cout<<du<<" "<<dv<<"\n";
+        glm::vec3 vertical = camera_up;
+        glm::vec3 horizontal = glm::normalize(glm::cross(camera_direction, vertical));
+        float v_w = (2 * v - 1) * tan(vfov / 2);
+        float h_w = (2 * u - 1) * tan(hfov / 2);
+        glm::vec3 d = glm::normalize(camera_direction + h_w * horizontal + v_w * vertical);
+        color_sum += trace(camera_position, d, shapes, 0);
+      }
+      framebuffer[i][j] = glm::uvec3(255.0f * (color_sum / num_samples));
     }
   }
   // normalize the framebuffer if any value is greater than 255
