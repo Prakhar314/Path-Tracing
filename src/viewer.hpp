@@ -1,7 +1,7 @@
 #include <string>
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_image.h"
-#include "glm/glm.hpp"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <glm/glm.hpp>
 
 using namespace std;
 class Viewer

@@ -1,6 +1,15 @@
 #include "ray.hpp"
 #include <iostream>
+#include <math.h>
+#include <random>
+#include <cstdlib>
+#include <ctime>
 
+using namespace std; 
+
+double doubleRand() {
+  return double(rand()) / (double(RAND_MAX) + 1.0);
+}
 #define PI 3.14159265358979323846f
 
 RayTracer::RayTracer(const int width, const int height, const float vfov, const glm::vec3& camera_position, const glm::vec3& camera_direction, const glm::vec3& camera_up):
@@ -29,7 +38,7 @@ glm::uvec3** RayTracer::render(const std::vector<Shape*>& shapes) {
       float v_w = (2 * v - 1) * tan(vfov / 2);
       float h_w = (2 * u - 1) * tan(hfov / 2);
       glm::vec3 d = glm::normalize(camera_direction + h_w * horizontal + v_w * vertical);
-      framebuffer[i][j] = glm::uvec3(255.0f * trace(camera_position, d, shapes));
+      framebuffer[i][j] = glm::uvec3(255.0f * trace(camera_position, d, shapes, 0));
     }
   }
   // normalize the framebuffer if any value is greater than 255
@@ -61,6 +70,7 @@ void RayTracer::shoot_ray(const glm::vec3& o, const glm::vec3& d, const std::vec
   for(Shape* shape : shapes){
     glm::vec3 temp_normal;
     float t = shape->intersect(o, d, T_MIN, T_MAX, temp_normal);
+    //std::cout<<"t: "<<t<<"\n";
     if(t > T_MIN && t < closest_t && t < T_MAX){
       closest_t = t;
       closest_shape = shape;
@@ -94,7 +104,7 @@ bool RayTracer::shadow(const glm::vec3& o, const Shape* light, const std::vector
   return false;
 }
 
-glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes) const{
+glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, int recursion_depth) const{
   // find the closest shape and its intersection point using shoot_ray
   float closest_t;
   glm::vec3 closest_normal;
@@ -102,8 +112,8 @@ glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::ve
   shoot_ray(o, d, shapes, closest_t, closest_normal, closest_shape);
   glm::vec3 closest_position = o + closest_t * d;
   // if there is no intersection, return the background color
-  if(closest_shape == nullptr){
-    return glm::vec3(0.0f);
+  if(closest_shape == nullptr||recursion_depth>=100){
+    return glm::vec3(0.0f);  //return black
   }
 
   vector<Shape*> lights;
@@ -133,12 +143,44 @@ glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::ve
       l = l / distance;
       if(!shadow(closest_position, light, shapes)){
         // flux = I * dA cos(theta) / r^2
-        // irradiance = flux / dA
+        // irradiance = flux / d
         // radiance = brdf * irradiance
         glm::vec3 e = light->intensity * glm::max(glm::dot(l, closest_normal), 0.0f) / (distance * distance);
         l_i += closest_shape->albedo / PI * e; 
       }
     }
-    return l_i;
+      // Shape is metallic)
+      if(closest_shape->material->is_metallic){
+        //std::cout<<glm::dot(d,closest_normal)<<"\n";
+        glm::vec3 reflection_dir=closest_shape->material->reflect(closest_normal,d);
+        glm::vec3 reflectance=closest_shape->material->reflectance(closest_normal,d);
+        l_i+=reflectance*trace(closest_position+T_MIN*reflection_dir,reflection_dir,shapes,recursion_depth+1); //with reflected ray
+      }
+      // Shape is transparent
+      
+      else if(closest_shape->material->is_transparent){
+        /*
+        float cos_theta = fmin(glm::dot(-d, closest_normal), 1.0);
+        float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+        
+        float reflect_prob;
+        if (sin_theta * eta > 1.0) {
+            reflect_prob = 1.0;
+        } else {
+            float r0 = pow((1.0 - eta) / (1.0 + eta), 2);
+            reflect_prob = r0 + (1.0 - r0)*pow(1.0 - cos_theta, 5);
+        }
+        */
+         if (false) {
+            // Reflect the ray
+            glm::vec3 reflected_dir = closest_shape->material->reflect(closest_normal, d);
+            l_i+=trace(closest_position+T_MIN*reflected_dir,reflected_dir,shapes,recursion_depth+1); //with reflected ray
+            //attenuation = Color(1.0, 1.0, 1.0);  // fully reflective
+        } else {
+            glm::vec3 transmitted_dir = closest_shape->material->transmit(closest_normal, d);
+            l_i+=trace(closest_position+T_MIN*transmitted_dir,transmitted_dir,shapes,recursion_depth+1); //with reflected ray
+      }
+      }
+      return l_i;
   }
 }

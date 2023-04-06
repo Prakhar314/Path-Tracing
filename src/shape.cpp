@@ -37,11 +37,13 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
     return -1.0f;
   }
   float t = 0;
+  if(a==0) 
+  return -1.0f;
   // if the discriminant is zero, there is one intersection
   if (discriminant == 0) {
     t = -b / (2 * a);
     if (t < t_min || t > t_max) {
-      return 1.0f;
+      return -1.0f;
     }
   }
   // if the discriminant is positive, there are two intersections
