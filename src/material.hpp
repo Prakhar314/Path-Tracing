@@ -1,5 +1,7 @@
 #include <glm/glm.hpp>
 #include <iostream>
+#include <math.h>
+using namespace std;
 class Material
 {
     public:
@@ -30,7 +32,11 @@ class Material
 
 class Metallic : public Material {
 public:
-    Metallic(glm::vec3 reflectance, bool met) : Material(met,false), f0_reflectance(reflectance) {}
+    Metallic(glm::vec3 reflectance, bool met) :
+     Material(met,false) {
+        float maxComponent = glm::max(glm::max(reflectance.x, reflectance.y), reflectance.z);
+        f0_reflectance = reflectance / maxComponent;
+     }
 
     //get_reflected_ray
     glm::vec3 reflect(const glm::vec3 normal, const glm::vec3 incidentdirection) const override {
