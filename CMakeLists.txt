@@ -21,3 +21,6 @@ target_link_libraries(e2 ray viewer)
 
 add_executable(e3 examples/e3.cpp)
 target_link_libraries(e3 ray viewer)
+
+add_executable(e4 examples/e4.cpp)
+target_link_libraries(e4 ray viewer)

@@ -80,7 +80,7 @@ public:
             float eta=this->geteta();
             float f=glm::dot(incident,normal);
             float eta_ratio = f<0 ? (1.0 / eta) : eta;
-            float cos_theta = fmin(glm::dot(-incident, normal), 1.0);
+            float cos_theta = fmin(abs(glm::dot(-incident, normal)), 1.0);
             float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
             if (eta_ratio * sin_theta > 1.0) {
                 // Total internal reflection
@@ -112,7 +112,7 @@ public:
     }
     glm::vec3 transmittance(const glm::vec3 normal, const glm::vec3 incidentdirection) const override {
 
-        return 1.0f-this->transmittance(normal,incidentdirection);
+        return 1.0f-this->reflectance(normal,incidentdirection);
         
     }
 private:
