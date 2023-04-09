@@ -112,7 +112,7 @@ glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::ve
   glm::vec3 closest_position = o + closest_t * d;
   // if there is no intersection, return the background color
   if(closest_shape == nullptr||recursion_depth>=10){
-    return glm::vec3(1.0f);  //return black
+    return glm::vec3(0.5f);  //sky color
   }
 
   vector<Shape*> lights;
@@ -146,7 +146,7 @@ glm::vec3 RayTracer::trace(const glm::vec3& o, const glm::vec3& d, const std::ve
         // irradiance = flux / d
         // radiance = brdf * irradiance
         glm::vec3 e = light->intensity * glm::max(glm::dot(l, closest_normal), 0.0f) / (distance * distance);
-        l_i += closest_shape->albedo / PI * e; 
+        l_i += closest_shape->albedo / PI * e;
       }
     }
       // Shape is metallic)

@@ -59,7 +59,9 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
       return -1.0f;
     }
   }
-  assert(t >= t_min && t <= t_max && t > 0);
+  if(t < t_min && t > t_max){
+    return -1.0f;
+  }
   glm::vec3 p = o + t * d;
   // hit inside or outside
   hit_normal = glm::normalize(p - center);
@@ -119,36 +121,41 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
   if (t_in_min > t_in_max) {
     return -1.0f;
   }
+  float final_t = -1.0f;
   if (t_in_min < t_min){
     if (t_in_max > t_max || t_in_max < t_min) {
       return -1.0f;
     }
-    if (t_in_max == t_x_max) {
-      hit_normal = glm::vec3(1, 0, 0);
-    }
-    else if (t_in_max == t_y_max) {
-      hit_normal = glm::vec3(0, 1, 0);
-    }
-    else{
-      hit_normal = glm::vec3(0, 0, 1);
-    }
-    return t_in_max;
+    final_t = t_in_max;
   }
   else{
     if (t_in_min > t_max || t_in_min < t_min) {
       return -1.0f;
     }
-    if (t_in_min == t_x_min) {
-      hit_normal = glm::vec3(-1, 0, 0);
-    }
-    else if (t_in_min == t_y_min) {
-      hit_normal = glm::vec3(0, -1, 0);
-    }
-    else{
-      hit_normal = glm::vec3(0, 0, -1);
-    }
-    return t_in_min;
+    final_t = t_in_min;
   }
+  // find point of intersection
+  glm::vec3 p = o + final_t * d;
+  // find normal
+  glm::vec3 diff = glm::abs(p - min_coords);
+  float min_diff = diff.x;
+  hit_normal = glm::vec3(-1.0f, 0.0f, 0.0f);
+  for (int i = 0; i < 3; i++) {
+    if (diff[i] < min_diff) {
+      min_diff = diff[i];
+      hit_normal = glm::vec3(0.0f);
+      hit_normal[i] = -1.0f;
+    }
+  }
+  diff = glm::abs(p - max_coords);
+  for (int i = 0; i < 3; i++) {
+    if (diff[i] < min_diff) {
+      min_diff = diff[i];
+      hit_normal = glm::vec3(0.0f);
+      hit_normal[i] = 1.0f;
+    }
+  }
+  return final_t;
 }
 
 

@@ -47,7 +47,12 @@ private:
 class Cuboid : public Shape
 {
 public:
-    Cuboid(const glm::vec3& min, const glm::vec3& max, const glm::vec3 albedo, const glm::vec3 intensity = glm::vec3(0)) : Shape(albedo, intensity),min_coords(min), max_coords(max){}
+    Cuboid(const glm::vec3& min, const glm::vec3& max, const glm::vec3 albedo, const glm::vec3 intensity = glm::vec3(0)) : Shape(albedo, intensity),min_coords(min), max_coords(max){
+      // ensure all coordinates are in the correct order
+      assert(min_coords.x <= max_coords.x);
+      assert(min_coords.y <= max_coords.y);
+      assert(min_coords.z <= max_coords.z);
+    }
     float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_normal) const override;
 private:
     const glm::vec3 min_coords;
