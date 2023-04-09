@@ -19,5 +19,6 @@ private:
   
   void shoot_ray(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, float& t, glm::vec3& normal, Shape*& shape) const;
   bool shadow(const glm::vec3& o, const Shape* light, const std::vector<Shape*>& shapes) const;
+  glm::vec3 SampleDiffuse(const glm::vec3& normal) const;
   glm::vec3 trace(const glm::vec3& o, const glm::vec3& d, const std::vector<Shape*>& shapes, const int rd) const;
 };

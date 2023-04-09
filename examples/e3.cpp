@@ -8,14 +8,14 @@ int main (){
   vector<Shape*> shapes;
 
   Shape* sphere1=new Sphere(glm::vec3(0, 0, -2), 1.0f, glm::vec3(1,1,1));
-  //Material* mat = new Metallic(glm::vec3(1, 1, 1),true);
-  Material* mat = new Transparent(1.33,true);
+  Material* mat = new Metallic(glm::vec3(1, 1, 1),true);
+  //Material* mat = new Transparent(1.33,true);
   sphere1->material=mat;
   shapes.push_back(sphere1);
 
   Shape* plan = new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(1,1,1));
-  //Material* matt=new Metallic(glm::vec3(1,1,1),true);
-  //plan->material=matt;
+  Material* matt=new Metallic(glm::vec3(1,1,1),true);
+  plan->material=matt;
   shapes.push_back(plan);
 
   Shape* cuboid1=new Cuboid(glm::vec3(2, 1, -3), glm::vec3(3, 2, -4), glm::vec3(0,0,1));
@@ -30,8 +30,8 @@ int main (){
   //cuboid2->material=mat2;
   shapes.push_back(cuboid2);
 
-  shapes.push_back(new Point(glm::vec3(2, 2, -1), glm::vec3(0), glm::vec3(200)));
-  shapes.push_back(new Point(glm::vec3(-10, 200, -1), glm::vec3(0), glm::vec3(500000)));
+  shapes.push_back(new Sphere(glm::vec3(3, 0, -4), 0.5f, glm::vec3(1,1,1), glm::vec3(20)));
+  shapes.push_back(new Point(glm::vec3(-10, 200, -1), glm::vec3(1), glm::vec3(500000)));
   //shapes.push_back(new Point(glm::vec3(10, 20, 0), glm::vec3(0), glm::vec3(500000)));
   glm::uvec3** output = raytracer.render(shapes);
   while (!viewer.shouldQuit()) {

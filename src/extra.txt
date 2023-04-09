@@ -1,0 +1,12 @@
+    /*
+        float cos_theta = fmin(glm::dot(-d, closest_normal), 1.0);
+        float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+        
+        float reflect_prob;
+        if (sin_theta * eta > 1.0) {
+            reflect_prob = 1.0;
+        } else {
+            float r0 = pow((1.0 - eta) / (1.0 + eta), 2);
+            reflect_prob = r0 + (1.0 - r0)*pow(1.0 - cos_theta, 5);
+        }
+        */
