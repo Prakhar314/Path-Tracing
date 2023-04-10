@@ -34,7 +34,7 @@ class Metallic : public Material {
 public:
     Metallic(glm::vec3 reflectance, bool met) :
      Material(met,false) {
-        float maxComponent = glm::max(glm::max(reflectance.x, reflectance.y), reflectance.z);
+        float maxComponent = max(max(reflectance.x, max(reflectance.y,1.0f)), reflectance.z);
         f0_reflectance = reflectance / maxComponent;
      }
 

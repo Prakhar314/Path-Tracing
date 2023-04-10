@@ -9,7 +9,7 @@ class Shape
 public:
 
     Shape(const glm::vec3 albedo, const glm::vec3 intensity = glm::vec3(0)) : 
-    albedo(albedo/max(albedo.x,max(albedo.y,albedo.z))), intensity(intensity), is_light(glm::length(intensity) > 0.001f){}
+    albedo(albedo/max(albedo.x,max(albedo.y,max(albedo.z,1.0f)))), intensity(intensity), is_light(glm::length(intensity) > 0.001f){}
     virtual float intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_normal) const = 0;
     virtual glm::vec3 get_position() const{
       throw "Not implemented";

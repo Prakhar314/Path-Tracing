@@ -155,6 +155,7 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
       hit_normal[i] = 1.0f;
     }
   }
+  //std::cout << "hit_normal " << hit_normal.x << " " << hit_normal.y << " " << hit_normal.z << std::endl;
   return final_t;
 }
 
