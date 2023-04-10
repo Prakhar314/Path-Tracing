@@ -25,7 +25,18 @@ float Point::intersect(const glm::vec3 &o, const glm::vec3 &d,
 
 glm::vec3 Sphere::get_position() const { return center; }
 
-float Sphere::intersect(const glm::vec3 &o, const glm::vec3 &d,
+void Shape::get_transforms(glm::vec3 &v, glm::vec3 &p) const {
+  v = glm::vec3(inv_transform * glm::vec4(v, 0));
+  glm::vec4 t = inv_transform * glm::vec4(p, 1);
+  p = glm::vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+}
+
+void Shape::normal_transform(glm::vec3 &n) const {
+  // transform the normal
+  n = glm::normalize(inv_transpose_transform * n);
+}
+
+float Sphere::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                         const float t_min, const float t_max,
                         glm::vec3 &hit_normal) const {
   // let the point on the sphere be p = o + td
@@ -33,6 +44,8 @@ float Sphere::intersect(const glm::vec3 &o, const glm::vec3 &d,
   // (o + td - c) * (o + td - c) = r^2
   // (o - c) * (o - c) + 2td * (o - c) + t^2d^2 = r^2
   // t^2d^2 + 2td * (o - c) + (o - c) * (o - c) - r^2 = 0
+  glm::vec3 o(o_t), d(d_t);
+  get_transforms(d, o);
   float a = glm::dot(d, d);
   float b = 2 * glm::dot(d, o - center);
   float c = glm::dot(o - center, o - center) - radius * radius;
@@ -71,10 +84,11 @@ float Sphere::intersect(const glm::vec3 &o, const glm::vec3 &d,
   glm::vec3 p = o + t * d;
   // hit inside or outside
   hit_normal = glm::normalize(p - center);
+  normal_transform(hit_normal);
   return t;
 }
 
-float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d,
+float Plane::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                        const float t_min, const float t_max,
                        glm::vec3 &hit_normal) const {
   // let the point on the plane be p = o + td
@@ -82,6 +96,8 @@ float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d,
   // n * (o + td) = d
   // n * o + n * td = d
   // t = (d - n * o) / (n * d)
+  glm::vec3 o(o_t), d(d_t);
+  get_transforms(d, o);
   if (glm::dot(normal, d) == 0) {
     return -1.0f;
   }
@@ -95,12 +111,15 @@ float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d,
   } else {
     hit_normal = normal;
   }
+  normal_transform(hit_normal);
   return t;
 }
 
-float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d,
+float Cuboid::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                         const float t_min, const float t_max,
                         glm::vec3 &hit_normal) const {
+  glm::vec3 o(o_t), d(d_t);
+  get_transforms(d, o);
   // let the point on the cuboid be p = o + td
   // then the equation of the cuboid is min.x <= p.x <= max.x and so on
   float t_x_min = (min_coords.x - o.x) / d.x;
@@ -165,5 +184,6 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d,
   }
   // std::cout << "hit_normal " << hit_normal.x << " " << hit_normal.y << " " <<
   // hit_normal.z << std::endl;
+  normal_transform(hit_normal);
   return final_t;
 }

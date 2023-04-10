@@ -9,8 +9,12 @@ using namespace std;
 class Shape {
 public:
   explicit Shape(const glm::vec3 albedo,
-                 const glm::vec3 intensity = glm::vec3(0))
+                 const glm::vec3 intensity = glm::vec3(0),
+                 const glm::mat4 transform = glm::mat4(1.0f))
       : albedo(albedo / max(albedo.x, max(albedo.y, max(albedo.z, 1.0f)))),
+        transform(transform), inv_transform(glm::inverse(transform)),
+        inv_transpose_transform(
+            glm::transpose(glm::inverse(glm::mat3(transform)))),
         intensity(intensity), is_light(glm::length(intensity) > 0.001f) {}
 
   virtual float intersect(const glm::vec3 &o, const glm::vec3 &d,
@@ -21,6 +25,8 @@ public:
 
   Material *material = new Transparent(1.0f, false);
   const glm::vec3 albedo;
+  const glm::mat4 transform, inv_transform;
+  const glm::mat3 inv_transpose_transform;
 
   const glm::vec3 intensity;
   const bool is_light;
@@ -29,14 +35,18 @@ public:
     return intensity;
   }
 
+  void get_transforms(glm::vec3 &v, glm::vec3 &p) const;
+  void normal_transform(glm::vec3 &n) const;
+
   ~Shape() { delete material; }
 };
 
 class Sphere : public Shape {
 public:
   Sphere(const glm::vec3 &center, const float radius, const glm::vec3 albedo,
-         const glm::vec3 intensity = glm::vec3(0))
-      : Shape(albedo, intensity), center(center), radius(radius) {}
+         const glm::vec3 intensity = glm::vec3(0),
+         const glm::mat4 transform = glm::mat4(1.0f))
+      : Shape(albedo, intensity, transform), center(center), radius(radius) {}
   glm::vec3 get_position() const override;
   float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
                   const float t_max, glm::vec3 &hit_normal) const override;
@@ -49,8 +59,9 @@ private:
 class Plane : public Shape {
 public:
   Plane(const glm::vec3 &normal, const float d, const glm::vec3 albedo,
-        const glm::vec3 intensity = glm::vec3(0))
-      : Shape(albedo, intensity), normal(normal), d(d) {}
+        const glm::vec3 intensity = glm::vec3(0),
+        const glm::mat4 transform = glm::mat4(1.0f))
+      : Shape(albedo, intensity, transform), normal(normal), d(d) {}
   float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
                   const float t_max, glm::vec3 &hit_normal) const override;
 
@@ -62,8 +73,9 @@ private:
 class Cuboid : public Shape {
 public:
   Cuboid(const glm::vec3 &min, const glm::vec3 &max, const glm::vec3 albedo,
-         const glm::vec3 intensity = glm::vec3(0))
-      : Shape(albedo, intensity), min_coords(min), max_coords(max) {
+         const glm::vec3 intensity = glm::vec3(0),
+         const glm::mat4 transform = glm::mat4(1.0f))
+      : Shape(albedo, intensity, transform), min_coords(min), max_coords(max) {
     // ensure all coordinates are in the correct order
     assert(min_coords.x <= max_coords.x);
     assert(min_coords.y <= max_coords.y);
