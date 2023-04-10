@@ -1,11 +1,17 @@
 #include "shape.hpp"
 #include <iostream>
 
-glm::vec3 Point::get_position() const{
-  return position;
+glm::vec3 Point::get_position() const { return position; }
+
+glm::vec3 Point::get_le(glm::vec3 ray_origin,
+                        glm::vec3 ray_intersection) const {
+  return intensity /
+         glm::dot(ray_intersection - ray_origin, ray_intersection - ray_origin);
 }
 
-float Point::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_normal) const{
+float Point::intersect(const glm::vec3 &o, const glm::vec3 &d,
+                       const float t_min, const float t_max,
+                       glm::vec3 &hit_normal) const {
   float t = glm::dot(position - o, d);
   if (t < t_min || t > t_max) {
     return -1.0f;
@@ -17,11 +23,11 @@ float Point::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min
   return t;
 }
 
-glm::vec3 Sphere::get_position() const{
-  return center;
-}
+glm::vec3 Sphere::get_position() const { return center; }
 
-float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_min, const float t_max, glm::vec3& hit_normal) const{
+float Sphere::intersect(const glm::vec3 &o, const glm::vec3 &d,
+                        const float t_min, const float t_max,
+                        glm::vec3 &hit_normal) const {
   // let the point on the sphere be p = o + td
   // then the equation of the sphere is (p - c) * (p - c) = r^2
   // (o + td - c) * (o + td - c) = r^2
@@ -37,8 +43,8 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
     return -1.0f;
   }
   float t = 0;
-  if(a==0) 
-  return -1.0f;
+  if (a == 0)
+    return -1.0f;
   // if the discriminant is zero, there is one intersection
   if (discriminant == 0) {
     t = -b / (2 * a);
@@ -47,19 +53,19 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
     }
   }
   // if the discriminant is positive, there are two intersections
-  else{
+  else {
     float t1 = (-b + sqrt(discriminant)) / (2 * a);
     float t2 = (-b - sqrt(discriminant)) / (2 * a);
     // we want the smaller positive t
     t = t1 < t2 ? t1 : t2;
-    if(t < t_min || t > t_max){
+    if (t < t_min || t > t_max) {
       t = t1 > t2 ? t1 : t2;
     }
     if (t < t_min || t > t_max) {
       return -1.0f;
     }
   }
-  if(t < t_min && t > t_max){
+  if (t < t_min && t > t_max) {
     return -1.0f;
   }
   glm::vec3 p = o + t * d;
@@ -68,7 +74,9 @@ float Sphere::intersect(const glm::vec3& o, const glm::vec3& d, const float t_mi
   return t;
 }
 
-float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3 &hit_normal) const{
+float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d,
+                       const float t_min, const float t_max,
+                       glm::vec3 &hit_normal) const {
   // let the point on the plane be p = o + td
   // then the equation of the plane is n * p = d
   // n * (o + td) = d
@@ -84,14 +92,15 @@ float Plane::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min
   // hit above or below
   if (glm::dot(normal, d) > 0) {
     hit_normal = -normal;
-  }
-  else {
+  } else {
     hit_normal = normal;
   }
   return t;
 }
 
-float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min, const float t_max, glm::vec3& hit_normal) const{
+float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d,
+                        const float t_min, const float t_max,
+                        glm::vec3 &hit_normal) const {
   // let the point on the cuboid be p = o + td
   // then the equation of the cuboid is min.x <= p.x <= max.x and so on
   float t_x_min = (min_coords.x - o.x) / d.x;
@@ -122,13 +131,12 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
     return -1.0f;
   }
   float final_t = -1.0f;
-  if (t_in_min < t_min){
+  if (t_in_min < t_min) {
     if (t_in_max > t_max || t_in_max < t_min) {
       return -1.0f;
     }
     final_t = t_in_max;
-  }
-  else{
+  } else {
     if (t_in_min > t_max || t_in_min < t_min) {
       return -1.0f;
     }
@@ -155,8 +163,7 @@ float Cuboid::intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_mi
       hit_normal[i] = 1.0f;
     }
   }
-  //std::cout << "hit_normal " << hit_normal.x << " " << hit_normal.y << " " << hit_normal.z << std::endl;
+  // std::cout << "hit_normal " << hit_normal.x << " " << hit_normal.y << " " <<
+  // hit_normal.z << std::endl;
   return final_t;
 }
-
-

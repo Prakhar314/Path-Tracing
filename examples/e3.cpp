@@ -10,7 +10,7 @@ int main() {
 
   Shape *sphere1 = new Sphere(glm::vec3(0, 0, -2), 1.0f, glm::vec3(1, 1, 1));
   // Material* mat = new Metallic(glm::vec3(1, 1, 1),true);
-  Material *mat = new Transparent(1.33, true);
+  Material *mat = new Transparent(1.5, true);
   sphere1->material = mat;
   shapes.push_back(sphere1);
 

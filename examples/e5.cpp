@@ -27,7 +27,8 @@ int main() {
 
   shapes.push_back(
       new Point(glm::vec3(0, 4.9, -10), glm::vec3(0), glm::vec3(50)));
-  shapes.push_back(new Point(glm::vec3(0, 0, 2), glm::vec3(0), glm::vec3(50)));
+  shapes.push_back(new Point(glm::vec3(0, 0, 4), glm::vec3(0), glm::vec3(50)));
+  glm::uvec3 **framebuffer;
   glm::uvec3 **output = raytracer.render(shapes);
   while (!viewer.shouldQuit()) {
     viewer.update(output);
