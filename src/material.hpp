@@ -59,7 +59,8 @@ public:
 
     // calculate reflectance
     glm::vec3 reflectance =
-        this->f0_reflectance + (1.0f - this->f0_reflectance) * pow((1 - cosTheta),5.0f);
+        this->f0_reflectance +
+        (1.0f - this->f0_reflectance) * pow((1 - cosTheta), 5.0f);
     return reflectance;
   }
 
@@ -114,13 +115,23 @@ public:
         ((this->refractive_index + 1) * (this->refractive_index + 1)));
     // std::cout<<f0_reflectance.x<<"\n";
     // calculate incident angle
-    float cosTheta =
-        std::abs(glm::dot(normal, incidentdirection) /
-                 (glm::length(normal) * glm::length(incidentdirection)));
-
+    float cosTheta = glm::dot(normal, incidentdirection);
+    // calculate transmitted angle
+    float eta = this->geteta();
+    if (cosTheta < 0) {
+      eta = 1.0 / eta;
+      cosTheta = -cosTheta;
+    }
+    float sinThetaT = eta * sqrt(1.0 - cosTheta * cosTheta);
+    if (sinThetaT >= 1.0) {
+      // Total internal reflection
+      return glm::vec3(1.0f, 1.0f, 1.0f);
+    }
+    // larger of incidence and transmitted angles
+    cosTheta = fmin(cosTheta, sqrt(1.0 - sinThetaT * sinThetaT));
     // calculate reflectance
     glm::vec3 reflectance =
-        f0_reflectance + (1.0f - f0_reflectance) * pow((1 - cosTheta),5.0f);
+        f0_reflectance + (1.0f - f0_reflectance) * pow((1 - cosTheta), 5.0f);
     return reflectance;
   }
   glm::vec3 transmittance(const glm::vec3 normal,

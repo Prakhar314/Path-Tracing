@@ -10,7 +10,7 @@ public:
   RayTracer(const int width, const int height, const float vfov,
             const glm::vec3 &camera_position, const glm::vec3 &camera_direction,
             const glm::vec3 &camera_up, const bool path_tracing = false);
-  glm::uvec3 **render(const std::vector<Shape *> &shapes, int num_samples = 10);
+  glm::uvec3 **render(const std::vector<Shape *> &shapes, int num_samples = 16);
 
 private:
   const float T_MIN = 0.001;

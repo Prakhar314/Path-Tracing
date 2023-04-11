@@ -51,7 +51,7 @@ glm::uvec3 **RayTracer::render(const std::vector<Shape *> &shapes,
       for (int k = 0; k < num_samples; k++) {
         float du = 0.0f;
         float dv = 0.0f;
-        if (!path_tracing && sqrt_s > 1) {
+        if (sqrt_s > 1) {
           int a = k / sqrt_s;
           int b = k % sqrt_s;
           du = static_cast<float>(a) / (sqrt_s - 1);
@@ -87,6 +87,7 @@ glm::uvec3 **RayTracer::render(const std::vector<Shape *> &shapes,
     }
   }
   path_tracing_count++;
+  std::cout << "path tracing count: " << path_tracing_count << std::endl;
   return framebuffer;
 }
 
@@ -107,7 +108,7 @@ void RayTracer::shoot_ray(const glm::vec3 &o, const glm::vec3 &d,
       hit_normal = temp_normal;
     }
   }
-  if(hit_shape == nullptr){
+  if (hit_shape == nullptr) {
     hit_t = -1;
   }
 }
@@ -140,15 +141,18 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
   glm::vec3 closest_position = o + closest_t * d;
   // if there is no intersection, return the background color
   if (closest_shape == nullptr) {
-    return glm::vec3(0.5f); // sky color
+    return glm::vec3(0.0f); // sky color
   }
+
+  const float continue_prob = 1.0f - 1.0f / EXP_BOUNCES;
+
   if (path_tracing) {
     // russian roulette
-    if (rand_f() > 1.0f - 1.0f / EXP_BOUNCES) {
+    if (rand_f() > continue_prob) {
       return glm::vec3(0.0f);
     }
   } else if (recursion_depth >= EXP_BOUNCES * 2) {
-    return glm::vec3(0.5f);
+    return glm::vec3(0.0f);
   }
 
   bool is_light = closest_shape->is_light;
@@ -164,6 +168,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
     }
   }
 
+  glm::vec3 l_i(0.0f);
   // if there are no lights, use the default scheme
   if (light_count == 0) {
     return (closest_normal + glm::vec3(1.0f)) / 2.0f;
@@ -171,40 +176,45 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
     // Shape is metallic
     if (closest_shape->material->is_metallic) {
       glm::vec3 l_i(0.0f);
-      glm::vec3 reflection_dir =
+      glm::vec3 reflected_dir =
           closest_shape->material->reflect(closest_normal, d);
       glm::vec3 reflectance =
           closest_shape->material->reflectance(closest_normal, d);
 
-      l_i += reflectance * trace(closest_position, reflection_dir, shapes,
-                                 recursion_depth + 1); // with reflected ray
-      return l_i;
+      l_i += reflectance * trace(closest_position, reflected_dir, shapes,
+                                 recursion_depth + 1);
       // Shape is transparent
     } else if (closest_shape->material->is_transparent) {
       // Reflect and refract
-      glm::vec3 l_i(0.0f);
-      glm::vec3 reflectans =
+      glm::vec3 reflectance =
           closest_shape->material->reflectance(closest_normal, d);
       glm::vec3 reflected_dir =
           closest_shape->material->reflect(closest_normal, d);
-      glm::vec3 transmittans = glm::vec3(1.0f) - reflectans;
+      glm::vec3 transmittance = glm::vec3(1.0f) - reflectance;
       glm::vec3 transmitted_dir =
           closest_shape->material->transmit(closest_normal, d);
       // fresnel weighted sampling
       float e_1 = rand_f();
-      if (!path_tracing || e_1 <= reflectans[0]) {
-        l_i += (path_tracing ? 1.0f : reflectans)* trace(closest_position, reflected_dir, shapes,
-                                  recursion_depth + 1); // with reflected ray
+      if (!path_tracing || e_1 <= reflectance[0]) {
+        if (path_tracing) {
+          l_i += trace(closest_position, reflected_dir, shapes,
+                       recursion_depth + 1);
+        } else {
+          l_i += reflectance * trace(closest_position, reflected_dir, shapes,
+                                     recursion_depth + 1);
+        }
       }
-      if (!path_tracing || e_1 > reflectans[0]) {
-
-        l_i += (path_tracing ? 1.0f : transmittans) * trace(closest_position, transmitted_dir, shapes,
-                                    recursion_depth + 1); // with refracted ray
+      if (!path_tracing || e_1 > reflectance[0]) {
+        if (path_tracing) {
+          l_i += trace(closest_position, transmitted_dir, shapes,
+                       recursion_depth + 1);
+        } else {
+          l_i += transmittance * trace(closest_position, transmitted_dir,
+                                       shapes, recursion_depth + 1);
+        }
       }
-      return l_i;
       // Shape is diffuse
     } else {
-      glm::vec3 l_i(0.0f);
       if (path_tracing) {
         // cosine weighted sampling
         float e_1 = rand_f();
@@ -236,8 +246,10 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
           }
         }
       }
-
-      return l_i;
     }
+    if (path_tracing) {
+      l_i /= continue_prob;
+    }
+    return l_i;
   }
 }
