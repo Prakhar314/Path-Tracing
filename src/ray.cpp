@@ -193,12 +193,12 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
       // fresnel weighted sampling
       float e_1 = rand_f();
       if (!path_tracing || e_1 <= reflectans[0]) {
-        l_i += reflectans * trace(closest_position, reflected_dir, shapes,
+        l_i += (path_tracing ? 1.0f : reflectans)* trace(closest_position, reflected_dir, shapes,
                                   recursion_depth + 1); // with reflected ray
       }
       if (!path_tracing || e_1 > reflectans[0]) {
 
-        l_i += transmittans * trace(closest_position, transmitted_dir, shapes,
+        l_i += (path_tracing ? 1.0f : transmittans) * trace(closest_position, transmitted_dir, shapes,
                                     recursion_depth + 1); // with refracted ray
       }
       return l_i;
@@ -220,7 +220,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
         glm::vec3 sample_dir = glm::normalize(
             cos_theta * n + sin_theta * (cos(phi) * u + sin(phi) * v));
 
-        l_i += closest_shape->albedo * cos_theta *
+        l_i += closest_shape->albedo * PI *
                trace(closest_position, sample_dir, shapes, recursion_depth + 1);
 
       } else {
