@@ -83,7 +83,7 @@ float Sphere::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
   }
   glm::vec3 p = o + t * d;
   // hit inside or outside
-  hit_normal = glm::normalize(p - center);
+  hit_normal = p - center;
   normal_transform(hit_normal);
   return t;
 }

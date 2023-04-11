@@ -59,9 +59,7 @@ public:
 
     // calculate reflectance
     glm::vec3 reflectance =
-        this->f0_reflectance + (1.0f - this->f0_reflectance) * (1 - cosTheta) *
-                                   (1 - cosTheta) * (1 - cosTheta) *
-                                   (1 - cosTheta) * (1 - cosTheta);
+        this->f0_reflectance + (1.0f - this->f0_reflectance) * pow((1 - cosTheta),5.0f);
     return reflectance;
   }
 
@@ -86,24 +84,25 @@ public:
     return reflected_ray;
   }
   float geteta() const override { return this->refractive_index; }
-  glm::vec3 transmit(const glm::vec3 normal,
+  glm::vec3 transmit(const glm::vec3 normal_t,
                      const glm::vec3 incident) const override {
 
     float eta = this->geteta();
-    float f = glm::dot(incident, normal);
+    float f = glm::dot(incident, normal_t);
+    // determine whether ray entering or exiting
     float eta_ratio = f < 0 ? (1.0 / eta) : eta;
-    float cos_theta = fmin(abs(glm::dot(-incident, normal)), 1.0);
+    // face normal, not outwards normal
+    glm::vec3 normal = f < 0 ? normal_t : -normal_t;
+    float cos_theta = fmin(glm::dot(-incident, normal), 1.0);
     float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
     if (eta_ratio * sin_theta > 1.0) {
       // Total internal reflection
       return this->reflect(normal, incident);
-      // attenuation = Color(1.0, 1.0, 1.0);  // fully reflective
     } else {
       float cos_phi = sqrt(1.0 - eta_ratio * eta_ratio * sin_theta * sin_theta);
       glm::vec3 refracted_dir =
           eta_ratio * incident + (eta_ratio * cos_theta - cos_phi) * normal;
       return refracted_dir;
-      // attenuation = Color(1.0, 1.0, 1.0);  // fully transparent
     }
   }
 
@@ -121,9 +120,7 @@ public:
 
     // calculate reflectance
     glm::vec3 reflectance =
-        f0_reflectance + (1.0f - f0_reflectance) * (1 - cosTheta) *
-                             (1 - cosTheta) * (1 - cosTheta) * (1 - cosTheta) *
-                             (1 - cosTheta);
+        f0_reflectance + (1.0f - f0_reflectance) * pow((1 - cosTheta),5.0f);
     return reflectance;
   }
   glm::vec3 transmittance(const glm::vec3 normal,

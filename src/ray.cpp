@@ -94,28 +94,21 @@ void RayTracer::shoot_ray(const glm::vec3 &o, const glm::vec3 &d,
                           const std::vector<Shape *> &shapes, float &hit_t,
                           glm::vec3 &hit_normal, Shape *&hit_shape) const {
   // find the closest shape and its intersection point
-  Shape *closest_shape = nullptr;
-  glm::vec3 closest_position, closest_normal;
-  float closest_t = std::numeric_limits<float>::max();
+  hit_t = std::numeric_limits<float>::max();
+  hit_shape = nullptr;
 
   // intersect with all shapes
   for (Shape *shape : shapes) {
     glm::vec3 temp_normal;
     float t = shape->intersect(o, d, T_MIN, T_MAX, temp_normal);
-    // std::cout<<"t: "<<t<<"\n";
-    if (t >= T_MIN && t < closest_t && t <= T_MAX) {
-      closest_t = t;
-      closest_shape = shape;
-      closest_normal = temp_normal;
+    if (t >= T_MIN && t < hit_t && t <= T_MAX) {
+      hit_t = t;
+      hit_shape = shape;
+      hit_normal = temp_normal;
     }
   }
-
-  if (closest_shape != nullptr) {
-    hit_t = closest_t;
-    hit_normal = closest_normal;
-    hit_shape = closest_shape;
-  } else {
-    hit_shape = nullptr;
+  if(hit_shape == nullptr){
+    hit_t = -1;
   }
 }
 
