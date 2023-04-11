@@ -11,7 +11,7 @@ int main() {
   vector<Shape *> shapes;
 
   glm::mat4 stretch = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -2));
-  stretch = glm::scale(stretch, glm::vec3(1, 0.5, 1));
+  stretch = glm::scale(stretch, glm::vec3(1, 0.5, 0.5));
   stretch = glm::translate(stretch, glm::vec3(0, 0, 2));
 
   shapes.push_back(new Sphere(glm::vec3(0, 0, -2), 1.0f, glm::vec3(0.4f),

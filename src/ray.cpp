@@ -223,6 +223,9 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
         float sin_theta = sqrt(1 - e_2);
 
         glm::vec3 n = closest_normal;
+        if (glm::dot(n, d) > 0) {
+          n = -n;
+        }
         glm::vec3 u = glm::normalize(glm::cross(n, d));
         glm::vec3 v = glm::normalize(glm::cross(u, n));
 

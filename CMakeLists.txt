@@ -33,3 +33,6 @@ target_link_libraries(e6 ray viewer)
 
 add_executable(e7 examples/e7.cpp)
 target_link_libraries(e7 ray viewer)
+
+add_executable(e8 examples/e8.cpp)
+target_link_libraries(e8 ray viewer)
