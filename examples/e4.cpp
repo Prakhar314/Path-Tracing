@@ -17,11 +17,11 @@ int main() {
   shapes.push_back(new Sphere(glm::vec3(0, 0, -2), 1.0f, glm::vec3(0.8f),
                               glm::vec3(0), stretch));
 
-  stretch = glm::translate(glm::mat4(1.0f), glm::vec3(-1, 1.5, -3));
+  stretch = glm::translate(glm::mat4(1.0f), glm::vec3(0, 2, -3));
   stretch = glm::scale(stretch, glm::vec3(0.5, 1, 1));
-  stretch = glm::translate(stretch, glm::vec3(1, -1.5, 3));
+  stretch = glm::translate(stretch, glm::vec3(0, -2, 3));
 
-  shapes.push_back(new Sphere(glm::vec3(-1, 1.5, -3), 1.0f, glm::vec3(0.8f),
+  shapes.push_back(new Sphere(glm::vec3(0, 2, -3), 1.0f, glm::vec3(0.8f),
                               glm::vec3(0), stretch));
 
   shapes.push_back(new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(0.8f)));
