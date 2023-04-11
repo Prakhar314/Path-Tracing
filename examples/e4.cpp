@@ -2,10 +2,12 @@
 #include "../src/viewer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
+// affince transformations
+
 int main() {
   RayTracer raytracer(640, 480, 90, glm::vec3(0), glm::vec3(0, 0, -1),
                       glm::vec3(0, 1, 0));
-  Viewer viewer(640, 480, "Raytracer");
+  Viewer viewer(640, 480, "Transformations");
   vector<Shape *> shapes;
 
   glm::mat4 stretch = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -2));

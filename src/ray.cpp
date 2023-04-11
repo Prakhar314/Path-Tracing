@@ -36,7 +36,8 @@ RayTracer::RayTracer(const int width, const int height, const float vfov,
 }
 
 glm::uvec3 **RayTracer::render(const std::vector<Shape *> &shapes,
-                               int num_samples) {
+                               const int num_samples,
+                               const bool gamma_correction) {
   for (int i = 0; i < width; i++) {
     for (int j = 0; j < height; j++) {
       glm::vec3 color_sum(0.0f);
@@ -73,12 +74,13 @@ glm::uvec3 **RayTracer::render(const std::vector<Shape *> &shapes,
         color_sum /= (1 + this->path_tracing_count);
       }
       color_sum /= (1.0f + color_sum);
-      // gamma correction
-      for (int k = 0; k < 3; k++) {
-        if (color_sum[k] <= 0.0031308) {
-          color_sum[k] *= 12.92;
-        } else {
-          color_sum[k] = 1.055 * pow(color_sum[k], 1 / 2.4) - 0.055;
+      if (gamma_correction) {
+        for (int k = 0; k < 3; k++) {
+          if (color_sum[k] <= 0.0031308) {
+            color_sum[k] *= 12.92;
+          } else {
+            color_sum[k] = 1.055 * pow(color_sum[k], 1 / 2.4) - 0.055;
+          }
         }
       }
       framebuffer[i][j] = glm::uvec3(255.0f * color_sum);
@@ -173,7 +175,6 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
   } else {
     // Shape is metallic
     if (closest_shape->material->is_metallic) {
-      glm::vec3 l_i(0.0f);
       glm::vec3 reflected_dir =
           closest_shape->material->reflect(closest_normal, d);
       glm::vec3 reflectance =
