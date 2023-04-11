@@ -52,10 +52,7 @@ public:
                         const glm::vec3 incidentdirection) const override {
 
     // calculate incident angle
-    float cosTheta =
-        std::abs(glm::dot(normal, incidentdirection) /
-                 (glm::length(normal) * glm::length(incidentdirection)));
-    float theta = std::acos(cosTheta); // in radians
+    float cosTheta = std::abs(glm::dot(normal, incidentdirection));
 
     // calculate reflectance
     glm::vec3 reflectance =
