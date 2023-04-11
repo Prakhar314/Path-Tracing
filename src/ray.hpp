@@ -5,6 +5,8 @@
 #include "shape.hpp"
 using namespace std;
 
+#define PI 3.14159265358979323846f
+
 class RayTracer {
 public:
   RayTracer(const int width, const int height, const float vfov,

@@ -9,7 +9,7 @@ int main() {
   vector<Shape *> shapes;
 
   glm::mat4 stretch = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -2));
-  stretch = glm::scale(stretch, glm::vec3(1, 0.5, 1));
+  stretch = glm::scale(stretch, glm::vec3(1, 1, 0.5));
   stretch = glm::translate(stretch, glm::vec3(0, 0, 2));
 
   shapes.push_back(new Sphere(glm::vec3(0, 0, -2), 1.0f, glm::vec3(0.4f),
@@ -17,10 +17,9 @@ int main() {
 
   shapes.push_back(new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(0.4f)));
 
-  glm::mat4 rot = glm::translate(glm::mat4(1.0f), glm::vec3(2.5, 1.5, -3.5));
-  rot = glm::rotate(rot, -PI / 3, glm::vec3(0, 1, 0));
-  rot = glm::rotate(rot, PI / 4, glm::vec3(1, 0, 0));
-  rot = glm::translate(rot, glm::vec3(-2.5, -1.5, 3.5));
+  glm::mat4 rot = glm::translate(glm::mat4(1.0f), glm::vec3(2.5, 0, -3.5));
+  rot = glm::rotate(rot, PI / 4, glm::vec3(0, 1, 0));
+  rot = glm::translate(rot, glm::vec3(-2.5, 0, 3.5));
 
   shapes.push_back(new Cuboid(glm::vec3(2, 1, -4), glm::vec3(3, 2, -3),
                               glm::vec3(0.4f), glm::vec3(0), rot));

@@ -7,8 +7,6 @@
 
 using namespace std;
 
-#define PI 3.14159265358979323846f
-
 float rand_f() { return static_cast<double>(rand()) / RAND_MAX; }
 
 RayTracer::RayTracer(const int width, const int height, const float vfov,
