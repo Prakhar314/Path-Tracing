@@ -232,7 +232,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
         glm::vec3 sample_dir = glm::normalize(
             cos_theta * n + sin_theta * (cos(phi) * u + sin(phi) * v));
 
-        l_i += closest_shape->albedo * PI *
+        l_i += closest_shape->albedo *
                trace(closest_position, sample_dir, shapes, recursion_depth + 1);
 
       } else {
@@ -242,7 +242,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
             if (!shadow(closest_position, shape, shapes)) {
               glm::vec3 l_dir = glm::normalize(l - closest_position);
               float cos_theta = abs(glm::dot(closest_normal, l_dir));
-              l_i += closest_shape->albedo * cos_theta *
+              l_i += closest_shape->albedo * cos_theta / PI *
                      shape->get_le(closest_position, l);
             }
           }

@@ -10,11 +10,11 @@ int main() {
 
   // cuboid light source
   shapes.push_back(new Cuboid(glm::vec3(-1, 3.9, -7), glm::vec3(1, 4.1, -5),
-                              glm::vec3(1, 1, 1), glm::vec3(2)));
+                              glm::vec3(1, 1, 1), glm::vec3(3)));
 
   // diffuse plane y = -1
   shapes.push_back(
-      new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(0.3f, 0.1f, 0.1f)));
+      new Plane(glm::vec3(0, 1, 0), -1, glm::vec3(0.6f, 0.2f, 0.2f)));
   // metal plane x = 3
   shapes.push_back(
       new Plane(glm::vec3(-1, 0, 0), -3, glm::vec3(0.3f, 0.1f, 0.1f)));
@@ -42,7 +42,7 @@ int main() {
   shapes[shapes.size() - 1]->material = new Transparent(1.5f, true);
 
   // diffuse sphere
-  shapes.push_back(new Sphere(glm::vec3(-2, 0, -7.5), 1.0f, glm::vec3(0.2f)));
+  shapes.push_back(new Sphere(glm::vec3(-2, 0, -7.5), 1.0f, glm::vec3(0.4f)));
   // glass sphere
   shapes.push_back(new Sphere(glm::vec3(-1, -0.5f, -2), 0.5f, glm::vec3(0.2f)));
   shapes[shapes.size() - 1]->material = new Transparent(1.5f, true);
