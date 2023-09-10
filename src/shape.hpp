@@ -34,8 +34,8 @@ public:
   // color of the light
   glm::vec3 intensity;
 
-  virtual glm::vec3 get_le(glm::vec3 ray_origin,
-                           glm::vec3 ray_intersection) const {
+  virtual glm::vec3 get_le(UNUSED glm::vec3 ray_origin,
+                           UNUSED glm::vec3 ray_intersection) const {
     return intensity;
   }
 

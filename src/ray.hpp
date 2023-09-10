@@ -1,5 +1,8 @@
 #include <glm/glm.hpp>
+#include <mutex>
+#include <condition_variable>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "shape.hpp"
@@ -9,8 +12,8 @@ using namespace std;
 
 class RayTracer {
 public:
-  glm::uvec3 **render(const std::vector<Shape *> &shapes, int num_samples = 16,
-                      const bool gamma_correction = true);
+  glm::uvec3 **render();
+  uint32_t render_thread(int thread_id);
 
   // setters
   void set_resolution(const int width, const int height) {
@@ -31,7 +34,8 @@ public:
   void set_path_tracing(const bool path_tracing) {
     this->path_tracing = path_tracing;
   }
-  void init();
+  void init(const std::vector<Shape *> &shapes, int num_samples = 16,
+            const bool gamma_correction = true);
 
   ~RayTracer() {
     if (framebuffer != nullptr) {
@@ -60,15 +64,23 @@ private:
   float vfov, hfov;
   glm::vec3 camera_position, camera_direction, camera_up;
 
+  uint32_t num_threads = 4;
+  mutex thread_mutex;
+  int thread_sync = 0;
+  condition_variable cv_t, cv_m;
+  unique_lock<mutex> thread_lock = unique_lock<mutex>(thread_mutex);
+  std::vector<thread> thread_pool;
+
   glm::uvec3 **framebuffer = nullptr;
   glm::vec3 **path_tracing_framebuffer = nullptr;
+  const std::vector<Shape *> *shapes = nullptr;
+  int num_samples = 16;
+  bool gamma_correction = true;
   int path_tracing_count = 0;
 
-  void shoot_ray(const glm::vec3 &o, const glm::vec3 &d,
-                 const std::vector<Shape *> &shapes, float &t,
+  void shoot_ray(const glm::vec3 &o, const glm::vec3 &d, float &t,
                  glm::vec3 &normal, Shape *&shape) const;
-  bool shadow(const glm::vec3 &o, const Shape *light,
-              const std::vector<Shape *> &shapes) const;
+  bool shadow(const glm::vec3 &o, const Shape *light) const;
   glm::vec3 trace(const glm::vec3 &o, const glm::vec3 &d,
-                  const std::vector<Shape *> &shape, int recursion_depth) const;
+                  int recursion_depth) const;
 };

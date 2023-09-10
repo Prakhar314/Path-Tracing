@@ -3,6 +3,8 @@
 #include <iostream>
 #include <math.h>
 
+#define UNUSED __attribute__((unused))
+
 using namespace std;
 class Material {
 public:
@@ -18,16 +20,16 @@ public:
 };
 
 class Diffuse : public Material {
-  glm::vec3 reflect(glm::vec3 n, glm::vec3 i) const override {
+  glm::vec3 reflect(UNUSED glm::vec3 n,UNUSED glm::vec3 i) const override {
     throw runtime_error("Diffuse material does not reflect light");
   }
-  glm::vec3 transmit(glm::vec3 n, glm::vec3 i) const override {
+  glm::vec3 transmit(UNUSED glm::vec3 n,UNUSED glm::vec3 i) const override {
     throw runtime_error("Diffuse material does not transmit light");
   }
-  glm::vec3 reflectance(glm::vec3 n, glm::vec3 i) const override {
+  glm::vec3 reflectance(UNUSED glm::vec3 n,UNUSED  glm::vec3 i) const override {
     throw runtime_error("Diffuse material does not reflect light");
   }
-  glm::vec3 transmittance(glm::vec3 n, glm::vec3 i) const override {
+  glm::vec3 transmittance(UNUSED glm::vec3 n,UNUSED  glm::vec3 i) const override {
     throw runtime_error("Diffuse material does not transmit light");
   }
   float geteta() const override {
@@ -68,14 +70,14 @@ public:
     return reflectance;
   }
 
-  glm::vec3 transmit(const glm::vec3 normal,
-                     const glm::vec3 incidentdirection) const override {
+  glm::vec3 transmit(UNUSED const glm::vec3 normal,
+                     UNUSED const glm::vec3 incidentdirection) const override {
 
     throw runtime_error("Metallic material does not transmit light");
   }
 
-  glm::vec3 transmittance(const glm::vec3 normal,
-                          const glm::vec3 incidentdirection) const override {
+  glm::vec3 transmittance(UNUSED const glm::vec3 normal,
+                          UNUSED const glm::vec3 incidentdirection) const override {
 
     throw runtime_error("Metallic material does not transmit light");
   }

@@ -15,7 +15,6 @@ int main() {
   raytracer.set_fov(vfov);
   raytracer.set_camera(camera_position, camera_direction, camera_up);
   raytracer.set_path_tracing(true);
-  raytracer.init();
 
   Viewer viewer(width, height, "Raytracer");
   vector<Shape *> shapes;
@@ -112,9 +111,17 @@ int main() {
 
     shapes.push_back(sphere);
   }
-
+  
+  raytracer.init(shapes);
+  uint32_t avg = 0;
+  uint32_t count = 0;
   while (!viewer.shouldQuit()) {
-    glm::uvec3 **output = raytracer.render(shapes);
+    uint32_t start = SDL_GetTicks();
+    glm::uvec3 **output = raytracer.render();
+    uint32_t end = SDL_GetTicks();
+    avg += end - start;
+    count++;
+    cout << "Average time: " << avg / count << endl;
     viewer.update(output);
   }
   return 0;

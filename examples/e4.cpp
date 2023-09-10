@@ -17,7 +17,6 @@ int main() {
   raytracer.set_fov(vfov);
   raytracer.set_camera(camera_position, camera_direction, camera_up);
   raytracer.set_path_tracing(false);
-  raytracer.init();
   Viewer viewer(width, height, "Raytracer");
   vector<Shape *> shapes;
 
@@ -109,7 +108,8 @@ int main() {
     shapes.push_back(point);
   }
 
-  glm::uvec3 **output = raytracer.render(shapes);
+  raytracer.init(shapes);
+  glm::uvec3 **output = raytracer.render();
   while (!viewer.shouldQuit()) {
     viewer.update(output);
   }

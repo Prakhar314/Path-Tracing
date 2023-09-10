@@ -15,7 +15,6 @@ int main() {
   raytracer.set_fov(vfov);
   raytracer.set_camera(camera_position, camera_direction, camera_up);
   raytracer.set_path_tracing(true);
-  raytracer.init();
 
   Viewer viewer(width, height, "Diffuse Interreflections");
   vector<Shape *> shapes;
@@ -88,8 +87,9 @@ int main() {
     shapes.push_back(cuboid);
   }
 
+  raytracer.init(shapes);
   while (!viewer.shouldQuit()) {
-    glm::uvec3 **output = raytracer.render(shapes);
+    glm::uvec3 **output = raytracer.render();
     viewer.update(output);
   }
   return 0;

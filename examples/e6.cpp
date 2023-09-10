@@ -2,7 +2,7 @@
 #include "../src/viewer.hpp"
 #include <glm/fwd.hpp>
 // metal vs glass
-int main(int argc, char **argv) {
+int main() {
   int width = 640;
   int height = 480;
   int vfov = 90;
@@ -15,7 +15,6 @@ int main(int argc, char **argv) {
   raytracer.set_fov(vfov);
   raytracer.set_camera(camera_position, camera_direction, camera_up);
   raytracer.set_path_tracing(false);
-  raytracer.init();
 
   Viewer viewer(width, height, "Green Metal and Glass");
   vector<Shape *> shapes;
@@ -120,7 +119,8 @@ int main(int argc, char **argv) {
   }
 
   glm::uvec3 **output;
-  output = raytracer.render(shapes);
+  raytracer.init(shapes);
+  output = raytracer.render();
   while (!viewer.shouldQuit()) {
     viewer.update(output);
   }
