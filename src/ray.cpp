@@ -9,14 +9,7 @@ using namespace std;
 
 float rand_f() { return static_cast<double>(rand()) / RAND_MAX; }
 
-RayTracer::RayTracer(const int width, const int height, const float vfov,
-                     const glm::vec3 &camera_position,
-                     const glm::vec3 &camera_direction,
-                     const glm::vec3 &camera_up, bool path_tracing)
-    : width(width), height(height), vfov(vfov * PI / 180),
-      hfov(2 * atan(tan(vfov / 2 * PI / 180) * width / height)),
-      camera_position(camera_position), camera_direction(camera_direction),
-      camera_up(camera_up), path_tracing(path_tracing) {
+void RayTracer::init() {
   framebuffer = new glm::uvec3 *[width];
   for (int i = 0; i < width; i++) {
     framebuffer[i] = new glm::uvec3[height];
@@ -155,13 +148,13 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
     return glm::vec3(0.0f);
   }
 
-  bool is_light = closest_shape->is_light;
+  bool is_light = closest_shape->is_light_source();
   int light_count = 0;
   if (is_light) {
     return closest_shape->get_le(o, closest_position);
   } else {
     for (Shape *shape : shapes) {
-      if (shape->is_light) {
+      if (shape->is_light_source()) {
         light_count++;
         break;
       }
@@ -174,7 +167,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
     return (closest_normal + glm::vec3(1.0f)) / 2.0f;
   } else {
     // Shape is metallic
-    if (closest_shape->material->is_metallic) {
+    if (closest_shape->material->isMetallic()) {
       glm::vec3 reflected_dir =
           closest_shape->material->reflect(closest_normal, d);
       glm::vec3 reflectance =
@@ -183,7 +176,7 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
       l_i += reflectance * trace(closest_position, reflected_dir, shapes,
                                  recursion_depth + 1);
       // Shape is transparent
-    } else if (closest_shape->material->is_transparent) {
+    } else if (closest_shape->material->isTransparent()) {
       // Reflect and refract
       glm::vec3 reflectance =
           closest_shape->material->reflectance(closest_normal, d);
@@ -236,8 +229,9 @@ glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
                trace(closest_position, sample_dir, shapes, recursion_depth + 1);
 
       } else {
+        // sample all light sources
         for (Shape *shape : shapes) {
-          if (shape->is_light) {
+          if (shape->is_light_source()) {
             glm::vec3 l = shape->get_position();
             if (!shadow(closest_position, shape, shapes)) {
               glm::vec3 l_dir = glm::normalize(l - closest_position);

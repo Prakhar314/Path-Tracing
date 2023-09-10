@@ -7,15 +7,18 @@
 using namespace std;
 
 class Shape {
+private:
+  bool is_light;
+
 public:
-  explicit Shape(const glm::vec3 albedo,
-                 const glm::vec3 intensity = glm::vec3(0),
-                 const glm::mat4 transform = glm::mat4(1.0f))
-      : albedo(albedo / max(albedo.x, max(albedo.y, max(albedo.z, 1.0f)))),
-        transform(transform), inv_transform(glm::inverse(transform)),
-        inv_transpose_transform(
-            glm::transpose(glm::inverse(glm::mat3(transform)))),
-        intensity(intensity), is_light(glm::length(intensity) > 0.001f) {}
+  Shape() {
+    albedo = glm::vec3(0.1f);
+    intensity = glm::vec3(0);
+    is_light = false;
+    transform = glm::mat4(1.0f);
+    inv_transform = glm::mat4(1.0f);
+    inv_transpose_transform = glm::mat3(1.0f);
+  }
 
   virtual float intersect(const glm::vec3 &o, const glm::vec3 &d,
                           const float t_min, const float t_max,
@@ -23,83 +26,98 @@ public:
 
   virtual glm::vec3 get_position() const { throw "Not implemented"; }
 
-  Material *material = new Transparent(1.0f, false);
-  const glm::vec3 albedo;
-  const glm::mat4 transform, inv_transform;
-  const glm::mat3 inv_transpose_transform;
+  Material *material = new Diffuse();
+  glm::vec3 albedo;
+  glm::mat4 transform, inv_transform;
+  glm::mat3 inv_transpose_transform;
 
-  const glm::vec3 intensity;
-  const bool is_light;
+  // color of the light
+  glm::vec3 intensity;
+
   virtual glm::vec3 get_le(glm::vec3 ray_origin,
                            glm::vec3 ray_intersection) const {
     return intensity;
   }
 
+  // setters
+  void set_albedo(const glm::vec3 &albedo) { this->albedo = albedo; }
+  void set_intensity(const glm::vec3 &intensity) {
+    this->intensity = intensity;
+    this->is_light = glm::length(intensity) > 0;
+  }
+  void set_transform(const glm::mat4 &transform);
+  void set_material(Material *material) { this->material = material; }
+  bool is_light_source() const { return is_light; }
+
   void get_transforms(glm::vec3 &v, glm::vec3 &p) const;
   void normal_transform(glm::vec3 &n) const;
 
-  ~Shape() { delete material; }
+  virtual ~Shape() { delete material; }
 };
 
 class Sphere : public Shape {
 public:
-  Sphere(const glm::vec3 &center, const float radius, const glm::vec3 albedo,
-         const glm::vec3 intensity = glm::vec3(0),
-         const glm::mat4 transform = glm::mat4(1.0f))
-      : Shape(albedo, intensity, transform), center(center), radius(radius) {}
   glm::vec3 get_position() const override;
   float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
                   const float t_max, glm::vec3 &hit_normal) const override;
 
+  // setters
+  void set_radius(const float radius) { this->radius = radius; }
+  void set_center(const glm::vec3 &center) { this->center = center; }
+
 private:
-  const glm::vec3 center;
-  const float radius;
+  glm::vec3 center;
+  float radius;
 };
 
 class Plane : public Shape {
 public:
-  Plane(const glm::vec3 &normal, const float d, const glm::vec3 albedo,
-        const glm::vec3 intensity = glm::vec3(0),
-        const glm::mat4 transform = glm::mat4(1.0f))
-      : Shape(albedo, intensity, transform), normal(normal), d(d) {}
   float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
                   const float t_max, glm::vec3 &hit_normal) const override;
 
+  // setters
+  void set_normal(const glm::vec3 &normal) { this->normal = normal; }
+  void set_d(const float d) { this->d = d; }
+
 private:
-  const glm::vec3 normal;
-  const float d;
+  glm::vec3 normal;
+  float d;
 };
 
 class Cuboid : public Shape {
 public:
-  Cuboid(const glm::vec3 &min, const glm::vec3 &max, const glm::vec3 albedo,
-         const glm::vec3 intensity = glm::vec3(0),
-         const glm::mat4 transform = glm::mat4(1.0f))
-      : Shape(albedo, intensity, transform), min_coords(min), max_coords(max) {
-    // ensure all coordinates are in the correct order
+  float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
+                  const float t_max, glm::vec3 &hit_normal) const override;
+
+  // setters
+  void set_bounds(const glm::vec3 &min, const glm::vec3 &max) {
+    this->min_coords = min;
+    this->max_coords = max;
+    check_coordinates();
+  }
+
+private:
+  glm::vec3 min_coords;
+  glm::vec3 max_coords;
+
+  void check_coordinates() {
     assert(min_coords.x <= max_coords.x);
     assert(min_coords.y <= max_coords.y);
     assert(min_coords.z <= max_coords.z);
   }
-  float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
-                  const float t_max, glm::vec3 &hit_normal) const override;
-
-private:
-  const glm::vec3 min_coords;
-  const glm::vec3 max_coords;
 };
 
 class Point : public Shape {
 public:
-  Point(const glm::vec3 &position, const glm::vec3 albedo = glm::vec3(0),
-        const glm::vec3 intensity = glm::vec3(0))
-      : Shape(albedo, intensity), position(position) {}
   float intersect(const glm::vec3 &o, const glm::vec3 &d, const float t_min,
                   const float t_max, glm::vec3 &hit_normal) const override;
   glm::vec3 get_position() const override;
   glm::vec3 get_le(glm::vec3 ray_origin,
                    glm::vec3 ray_intersection) const override;
 
+  // setters
+  void set_position(const glm::vec3 &position) { this->position = position; }
+
 private:
-  const glm::vec3 position;
+  glm::vec3 position;
 };

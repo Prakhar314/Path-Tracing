@@ -6,32 +6,38 @@
 using namespace std;
 class Material {
 public:
-  Material(const bool met = false, const bool trans = false)
-      : is_metallic(met), is_transparent(trans) {}
   virtual ~Material() {}
-  virtual glm::vec3 reflect(glm::vec3 n, glm::vec3 i) const {
-    throw "Not implemented";
-  }
 
-  virtual glm::vec3 transmit(glm::vec3 n, glm::vec3 i) const {
-    throw "Not implemented";
-  }
+  virtual glm::vec3 reflect(glm::vec3 n, glm::vec3 i) const = 0;
+  virtual glm::vec3 transmit(glm::vec3 n, glm::vec3 i) const = 0;
+  virtual glm::vec3 reflectance(glm::vec3 n, glm::vec3 i) const = 0;
+  virtual glm::vec3 transmittance(glm::vec3 n, glm::vec3 i) const = 0;
+  virtual float geteta() const = 0;
+  virtual bool isMetallic() const { return false; }
+  virtual bool isTransparent() const { return false; }
+};
 
-  virtual glm::vec3 reflectance(glm::vec3 n, glm::vec3 i) const {
-    throw "Not implemented";
+class Diffuse : public Material {
+  glm::vec3 reflect(glm::vec3 n, glm::vec3 i) const override {
+    throw runtime_error("Diffuse material does not reflect light");
   }
-
-  virtual glm::vec3 transmittance(glm::vec3 n, glm::vec3 i) const {
-    throw "Not implemented";
+  glm::vec3 transmit(glm::vec3 n, glm::vec3 i) const override {
+    throw runtime_error("Diffuse material does not transmit light");
   }
-  virtual float geteta() const { throw "Not implemented"; }
-  const bool is_metallic;
-  const bool is_transparent;
+  glm::vec3 reflectance(glm::vec3 n, glm::vec3 i) const override {
+    throw runtime_error("Diffuse material does not reflect light");
+  }
+  glm::vec3 transmittance(glm::vec3 n, glm::vec3 i) const override {
+    throw runtime_error("Diffuse material does not transmit light");
+  }
+  float geteta() const override {
+    throw runtime_error("Diffuse material does not transmit light");
+  }
 };
 
 class Metallic : public Material {
 public:
-  Metallic(glm::vec3 reflectance, bool met) : Material(met, false) {
+  explicit Metallic(glm::vec3 reflectance) {
     float maxComponent =
         max(max(reflectance.x, max(reflectance.y, 1.0f)), reflectance.z);
     f0_reflectance = reflectance / maxComponent;
@@ -48,6 +54,7 @@ public:
 
     return reflected_ray;
   }
+
   glm::vec3 reflectance(const glm::vec3 normal,
                         const glm::vec3 incidentdirection) const override {
 
@@ -61,14 +68,31 @@ public:
     return reflectance;
   }
 
+  glm::vec3 transmit(const glm::vec3 normal,
+                     const glm::vec3 incidentdirection) const override {
+
+    throw runtime_error("Metallic material does not transmit light");
+  }
+
+  glm::vec3 transmittance(const glm::vec3 normal,
+                          const glm::vec3 incidentdirection) const override {
+
+    throw runtime_error("Metallic material does not transmit light");
+  }
+
+  float geteta() const override {
+    throw runtime_error("Metallic material does not transmit light");
+  }
+
+  bool isMetallic() const override { return true; }
+
 private:
   glm::vec3 f0_reflectance;
 };
 
 class Transparent : public Material {
 public:
-  Transparent(float ri, bool met)
-      : Material(false, met), refractive_index(ri) {}
+  explicit Transparent(float ri) : refractive_index(ri) {}
 
   // get_reflected_ray
   glm::vec3 reflect(const glm::vec3 normal,
@@ -136,6 +160,8 @@ public:
 
     return 1.0f - this->reflectance(normal, incidentdirection);
   }
+
+  bool isTransparent() const override { return true; }
 
 private:
   float refractive_index;

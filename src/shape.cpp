@@ -1,6 +1,25 @@
 #include "shape.hpp"
 #include <iostream>
 
+// Shape
+void Shape::get_transforms(glm::vec3 &v, glm::vec3 &p) const {
+  v = glm::vec3(inv_transform * glm::vec4(v, 0));
+  glm::vec4 t = inv_transform * glm::vec4(p, 1);
+  p = glm::vec3(t.x / t.w, t.y / t.w, t.z / t.w);
+}
+
+void Shape::normal_transform(glm::vec3 &n) const {
+  // transform the normal
+  n = glm::normalize(inv_transpose_transform * n);
+}
+
+void Shape::set_transform(const glm::mat4 &transform){
+  this->transform = transform;
+  this->inv_transform = glm::inverse(transform);
+  this->inv_transpose_transform = glm::transpose(glm::inverse(glm::mat3(transform)));
+}
+
+// Point
 glm::vec3 Point::get_position() const { return position; }
 
 glm::vec3 Point::get_le(glm::vec3 ray_origin,
@@ -23,18 +42,8 @@ float Point::intersect(const glm::vec3 &o, const glm::vec3 &d,
   return t;
 }
 
+// Sphere
 glm::vec3 Sphere::get_position() const { return center; }
-
-void Shape::get_transforms(glm::vec3 &v, glm::vec3 &p) const {
-  v = glm::vec3(inv_transform * glm::vec4(v, 0));
-  glm::vec4 t = inv_transform * glm::vec4(p, 1);
-  p = glm::vec3(t.x / t.w, t.y / t.w, t.z / t.w);
-}
-
-void Shape::normal_transform(glm::vec3 &n) const {
-  // transform the normal
-  n = glm::normalize(inv_transpose_transform * n);
-}
 
 float Sphere::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                         const float t_min, const float t_max,
@@ -88,6 +97,7 @@ float Sphere::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
   return t;
 }
 
+// Plane
 float Plane::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                        const float t_min, const float t_max,
                        glm::vec3 &hit_normal) const {
@@ -115,6 +125,7 @@ float Plane::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
   return t;
 }
 
+// Cuboid
 float Cuboid::intersect(const glm::vec3 &o_t, const glm::vec3 &d_t,
                         const float t_min, const float t_max,
                         glm::vec3 &hit_normal) const {
