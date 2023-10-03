@@ -117,7 +117,10 @@ int main(int argc, UNUSED char **argv) {
 
     shapes.push_back(point);
   }
-  raytracer.init(shapes, 16, argc == 1);
+
+  raytracer.set_gamma_correction(argc == 1);
+  raytracer.init(shapes);
+
   glm::uvec3 **output;
   output = raytracer.render();
   while (!viewer.shouldQuit()) {

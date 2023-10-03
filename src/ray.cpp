@@ -8,16 +8,13 @@
 
 using namespace std;
 
-float rand_f() {
-  unsigned int lo, hi;
-
-  // RDTSC copies contents of 64-bit TSC into EDX:EAX
-  asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
-  return static_cast<double>(rand_r(&lo)) / RAND_MAX;
+inline float RayTracer::rand_f() {
+  static thread_local unsigned int rand_seed = 0;
+  // get current thread id
+  return static_cast<double>(rand_r(&rand_seed)) / RAND_MAX;
 }
 
-void RayTracer::init(const std::vector<Shape *> &shapes, const int num_samples,
-                     const bool gamma_correction) {
+void RayTracer::init(const std::vector<Shape *> &shapes) {
 
   this->shapes = &shapes;
   this->num_samples = num_samples;
@@ -47,10 +44,6 @@ void RayTracer::init(const std::vector<Shape *> &shapes, const int num_samples,
         while (true) {
           uint32_t time = this->render_thread(thread_id);
           unique_lock<mutex> lk(thread_mutex);
-          // int start = thread_id * width / num_threads;
-          // int end = (thread_id + 1) * width / num_threads;
-          // cout << "thread " << thread_id << " finished in " << time << "ms\n";
-          // cout << start << " " << end << "\n";
           this->thread_sync++;
           if (this->thread_sync == this->num_threads) {
             cv_m.notify_all();
@@ -143,7 +136,7 @@ glm::uvec3 **RayTracer::render() {
 }
 
 void RayTracer::shoot_ray(const glm::vec3 &o, const glm::vec3 &d, float &hit_t,
-                          glm::vec3 &hit_normal, Shape *&hit_shape) const {
+                          glm::vec3 &hit_normal, Shape *&hit_shape) {
   // find the closest shape and its intersection point
   hit_t = std::numeric_limits<float>::max();
   hit_shape = nullptr;
@@ -163,7 +156,7 @@ void RayTracer::shoot_ray(const glm::vec3 &o, const glm::vec3 &d, float &hit_t,
   }
 }
 
-bool RayTracer::shadow(const glm::vec3 &o, const Shape *light) const {
+bool RayTracer::shadow(const glm::vec3 &o, const Shape *light) {
   // check if the ray from o to light->position intersects any shape
   glm::vec3 d = glm::normalize(light->get_position() - o);
   // using shoot_ray
@@ -180,7 +173,7 @@ bool RayTracer::shadow(const glm::vec3 &o, const Shape *light) const {
 }
 
 glm::vec3 RayTracer::trace(const glm::vec3 &o, const glm::vec3 &d,
-                           int recursion_depth) const {
+                           int recursion_depth) {
   // find the closest shape and its intersection point using shoot_ray
   float closest_t;
   glm::vec3 closest_normal;

@@ -86,10 +86,21 @@ int main() {
     cuboid->set_intensity(glm::vec3(1.5));
     shapes.push_back(cuboid);
   }
+  
+  raytracer.set_num_threads(1);
 
   raytracer.init(shapes);
+
+  uint32_t avg = 0;
+  uint32_t count = 0;
   while (!viewer.shouldQuit()) {
+    uint32_t start = SDL_GetTicks();
     glm::uvec3 **output = raytracer.render();
+    uint32_t end = SDL_GetTicks();
+    avg += end - start;
+    count++;
+    cout << "Took " << end - start << "ms to render" << endl;
+    cout << "Average time: " << avg / count << endl;
     viewer.update(output);
   }
   return 0;
