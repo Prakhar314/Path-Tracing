@@ -17,8 +17,6 @@ inline float RayTracer::rand_f() {
 void RayTracer::init(const std::vector<Shape *> &shapes) {
 
   this->shapes = &shapes;
-  this->num_samples = num_samples;
-  this->gamma_correction = gamma_correction;
   framebuffer = new glm::uvec3 *[width];
   for (int i = 0; i < width; i++) {
     framebuffer[i] = new glm::uvec3[height];
@@ -63,9 +61,9 @@ uint32_t RayTracer::render_thread(int thread_id) {
   uint32_t start = std::chrono::duration_cast<std::chrono::milliseconds>(
                        std::chrono::system_clock::now().time_since_epoch())
                        .count();
-  for (int i = thread_id * width / num_threads;
-       i < (thread_id + 1) * width / num_threads && i < width; i++) {
-    for (int j = 0; j < height; j++) {
+  for (int i = 0; i < width; i++) {
+    for (int j = thread_id * height / num_threads;
+         j < (thread_id + 1) * height / num_threads && j < height; j++) {
       glm::vec3 color_sum(0.0f);
       if (path_tracing) {
         color_sum = path_tracing_framebuffer[i][j];

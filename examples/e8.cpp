@@ -112,7 +112,7 @@ int main() {
     shapes.push_back(sphere);
   }
     
-  raytracer.set_num_threads(8);
+  raytracer.set_num_threads(12);
 
   raytracer.init(shapes);
   uint32_t avg = 0;
